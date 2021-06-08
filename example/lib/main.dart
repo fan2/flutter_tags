@@ -495,19 +495,8 @@ class _MyHomePageState extends State<MyHomePage>
           splashColor: Colors.green,
           combine: ItemTagsCombine.withTextBefore,
           image: index > 0 && index < 5
-              ? ItemTagsImage(
-                  //image: AssetImage("img/p$index.jpg"),
-                  child: Image.network(
-                  "http://www.clipartpanda.com/clipart_images/user-66327738/download",
-                  width: 16 * _fontSize / 14,
-                  height: 16 * _fontSize / 14,
-                ))
-              : (1 == 1
-                  ? ItemTagsImage(
-                      image: NetworkImage(
-                          "https://d32ogoqmya1dw8.cloudfront.net/images/serc/empty_user_icon_256.v2.png"),
-                    )
-                  : null),
+              ? ItemTagsImage(image: AssetImage("img/p$index.jpg"))
+              : null,
           icon: (item == '0' || item == '1' || item == '2')
               ? ItemTagsIcon(
                   icon: _icon[int.parse(item)],
@@ -591,11 +580,7 @@ class _MyHomePageState extends State<MyHomePage>
             combine: combine,
             image: index > 0 && index < 5
                 ? ItemTagsImage(image: AssetImage("img/p$index.jpg"))
-                : (1 == 1
-                    ? ItemTagsImage(
-                        image: NetworkImage(
-                            "https://image.flaticon.com/icons/png/512/44/44948.png"))
-                    : null),
+                : null,
             icon: (item == '0' || item == '1' || item == '2')
                 ? ItemTagsIcon(
                     icon: _icon[int.parse(item)],
