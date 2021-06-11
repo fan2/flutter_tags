@@ -136,8 +136,7 @@ class _MyHomePageState extends State<MyHomePage>
                           border: Border(
                               bottom: BorderSide(
                                   color: Colors.grey[300], width: 0.5))),
-                      margin:
-                          EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+                      margin: EdgeInsets.symmetric(horizontal: 0, vertical: 10),
                       child: ExpansionTile(
                         title: Text("Settings"),
                         children: <Widget>[
@@ -190,7 +189,7 @@ class _MyHomePageState extends State<MyHomePage>
                               ),
                               DropdownButton(
                                 hint: _column == 0
-                                    ? Text("Not set")
+                                    ? Text("None")
                                     : Text(_column.toString()),
                                 items: _buildItems(),
                                 onChanged: (a) {
