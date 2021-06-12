@@ -33,19 +33,19 @@ class _MyHomePageState extends State<MyHomePage>
 
   // 移除按钮
   bool _removeButton = false;
-  // 定制一行显示的标签列数
-  bool _symmetryArrangement = false;
-  // _symmetry 选择每行显示的标签数
-  int _symmetryColumnPerRow = 0;
-  // 一行横向滚动or自动折行纵向排版
+  // 禁止横向滚动，自动折行排版
   bool _horizontalScroll = true;
+  // 对称排版，每个标签宽度一致
+  bool _symmetryArrangement = false;
+  // 对称排版，每行显示的标签数
+  int _symmetryColumnPerRow = 0;
   // 单选模式
   bool _singleSelection = true;
 
   // 字体大小
   double _fontSize = 14;
 
-  // +添加数字标签，当前添加计数
+  // + 添加数字标签，当前添加计数
   int _addCount = 0;
 
   // 初始标签标题列表
@@ -330,6 +330,8 @@ class _MyHomePageState extends State<MyHomePage>
       itemBuilder: (index) {
         final item = _tagItemTitles[index];
 
+        // pressEnabled: true, removeButton?,
+        // pass singleSelection default true-!active
         return TagItem(
           key: Key(index.toString()),
           index: index,
