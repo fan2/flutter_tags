@@ -33,28 +33,28 @@ class _MyHomePageState extends State<MyHomePage>
   TabController _tabController;
   ScrollController _scrollViewController;
 
-  // 移除按钮
+  // 移除按钮：只影响 Demo 1
   bool _removeButton = false;
-  // 定制一行显示的标签列数
-  bool _symmetryArrangement = false;
-  // _symmetry 选择每行显示的标签数
-  int _symmetryColumnPerRow = 0;
-  // 一行横向滚动or自动折行纵向排版
+  // 禁止横向滚动，自动折行排版：同时影响 Demo 1 和 Demo 2
   bool _horizontalScroll = true;
-  // 单选模式
+  // 对称排版，每个标签宽度一致：同时影响 Demo 1 和 Demo 2
+  bool _symmetryArrangement = false;
+  // 对称排版，每行显示的标签数：同时影响 Demo 1 和 Demo 2
+  int _symmetryColumnPerRow = 0;
+  // 单选模式：只影响 Demo 1，Demo 2 不支持点选
   bool _singleSelection = true;
 
-  // 显示推荐
+  // 显示推荐：只影响 Demo 2 _addTagTextField
   bool _showSuggesttions = false;
-  // 组合方式
+  // 组合方式：只影响 Demo 2 _combineMenuItems
   String _tagItemCombine = 'withTextBefore';
-  // 读取顺序
+  // 读取顺序：只影响 Demo 2
   bool _startDirection = false;
 
-  // 字体大小
+  // 字体大小：同时影响 Demo 1 和 Demo 2
   double _fontSize = 14;
 
-  // +添加数字标签，当前添加计数
+  // Demo 1 + 添加数字标签，当前添加计数
   int _addCount = 0;
 
   // 初始标签标题列表
@@ -146,10 +146,12 @@ class _MyHomePageState extends State<MyHomePage>
           body: TabBarView(
             controller: _tabController,
             children: [
+              // Demo 1
               CustomScrollView(
                 slivers: <Widget>[
                   SliverList(
                       delegate: SliverChildListDelegate([
+                    // Settings 1
                     Container(
                       decoration: BoxDecoration(
                           border: Border(
@@ -157,7 +159,7 @@ class _MyHomePageState extends State<MyHomePage>
                                   color: Colors.grey[300], width: 0.5))),
                       margin: EdgeInsets.symmetric(horizontal: 0, vertical: 10),
                       child: ExpansionTile(
-                        title: Text("Settings"),
+                        title: Text("Settings 1"),
                         children: <Widget>[
                           Row(
                             mainAxisAlignment: MainAxisAlignment.center,
@@ -352,10 +354,12 @@ class _MyHomePageState extends State<MyHomePage>
                   ])),
                 ],
               ),
+              // Demo 2
               CustomScrollView(
                 slivers: <Widget>[
                   SliverList(
                       delegate: SliverChildListDelegate([
+                    // Settings 2
                     Container(
                       decoration: BoxDecoration(
                           border: Border(
@@ -364,7 +368,7 @@ class _MyHomePageState extends State<MyHomePage>
                       margin:
                           EdgeInsets.symmetric(horizontal: 10, vertical: 10),
                       child: ExpansionTile(
-                        title: Text("Settings"),
+                        title: Text("Settings 2"),
                         children: <Widget>[
                           Row(
                             mainAxisAlignment: MainAxisAlignment.center,
@@ -508,6 +512,8 @@ class _MyHomePageState extends State<MyHomePage>
       itemBuilder: (index) {
         final item = _tagItemTitles[index];
 
+        // pressEnabled: true, removeButton?,
+        // pass singleSelection default true-!active
         return TagItem(
           key: Key(index.toString()),
           index: index,
@@ -566,6 +572,8 @@ class _MyHomePageState extends State<MyHomePage>
 
         // 包裹手势控件，支持长按浮出菜单
         return GestureDetector(
+          // pressEnabled: false, removeButton,
+          // internal singleSelection default false-active
           child: TagItem(
             key: Key(index.toString()),
             index: index,
