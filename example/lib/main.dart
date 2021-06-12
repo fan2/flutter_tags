@@ -38,9 +38,11 @@ class _MyHomePageState extends State<MyHomePage>
   // 禁止横向滚动，自动折行排版：同时影响 Demo 1 和 Demo 2
   bool _horizontalScroll = true;
   // 对称排版，每个标签宽度一致：同时影响 Demo 1 和 Demo 2
+  /// 勾选 None 默认为 1，已勾选时不可再选 None
   bool _symmetryArrangement = false;
-  // 对称排版，每行显示的标签数：同时影响 Demo 1 和 Demo 2
-  int _symmetryColumnPerRow = 0;
+  // 每行显示的标签数：同时影响 Demo 1 和 Demo 2
+  /// 禁用 _horizontalScroll 自动折行或开启 symmetryArrangement，排版受该参数影响
+  int _columnPerRow = 0;
   // 单选模式：只影响 Demo 1，Demo 2 不支持点选
   bool _singleSelection = true;
 
@@ -193,6 +195,11 @@ class _MyHomePageState extends State<MyHomePage>
                                         value: _symmetryArrangement,
                                         onChanged: (a) {
                                           setState(() {
+                                            // 初始勾选时，None 转为 1
+                                            if (!_symmetryArrangement &&
+                                                _columnPerRow == 0) {
+                                              _columnPerRow = 1;
+                                            }
                                             _symmetryArrangement =
                                                 !_symmetryArrangement;
                                           });
@@ -211,13 +218,17 @@ class _MyHomePageState extends State<MyHomePage>
                                 padding: EdgeInsets.all(5),
                               ),
                               DropdownButton(
-                                hint: _symmetryColumnPerRow == 0
+                                hint: _columnPerRow == 0
                                     ? Text("None")
-                                    : Text(_symmetryColumnPerRow.toString()),
+                                    : Text(_columnPerRow.toString()),
                                 items: _symmetryMenuItems(),
                                 onChanged: (a) {
+                                  // 已勾选时，不能再选 None
+                                  if (_symmetryArrangement && a == 0) {
+                                    return;
+                                  }
                                   setState(() {
-                                    _symmetryColumnPerRow = a;
+                                    _columnPerRow = a;
                                   });
                                 },
                               ),
@@ -504,7 +515,7 @@ class _MyHomePageState extends State<MyHomePage>
     return TagPanel(
       key: _tagPanelKey,
       symmetry: _symmetryArrangement,
-      columns: _symmetryColumnPerRow,
+      columns: _columnPerRow,
       horizontalScroll: _horizontalScroll,
       //verticalDirection: VerticalDirection.up, textDirection: TextDirection.rtl,
       heightHorizontalScroll: 60 * (_fontSize / 14),
@@ -559,7 +570,7 @@ class _MyHomePageState extends State<MyHomePage>
     return TagPanel(
       key: Key("2"),
       symmetry: _symmetryArrangement,
-      columns: _symmetryColumnPerRow,
+      columns: _columnPerRow,
       horizontalScroll: _horizontalScroll,
       verticalDirection:
           _startDirection ? VerticalDirection.up : VerticalDirection.down,
