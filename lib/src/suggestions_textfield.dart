@@ -27,7 +27,7 @@ class SuggestionsTextField extends StatefulWidget {
 class _SuggestionsTextFieldState extends State<SuggestionsTextField> {
   final _controller = TextEditingController();
 
-  List<String> _matches = List();
+  List<String> _matches = [];
   String _helperText;
   bool _helperCheck = true;
 

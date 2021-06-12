@@ -33,7 +33,32 @@ class _MyHomePageState extends State<MyHomePage>
   TabController _tabController;
   ScrollController _scrollViewController;
 
-  final List<String> _list = [
+  // 移除按钮
+  bool _removeButton = false;
+  // 定制一行显示的标签列数
+  bool _symmetryArrangement = false;
+  // _symmetry 选择每行显示的标签数
+  int _symmetryColumnPerRow = 0;
+  // 一行横向滚动or自动折行纵向排版
+  bool _horizontalScroll = true;
+  // 单选模式
+  bool _singleSelection = true;
+
+  // 显示推荐
+  bool _showSuggesttions = false;
+  // 组合方式
+  String _tagItemCombine = 'withTextBefore';
+  // 读取顺序
+  bool _startDirection = false;
+
+  // 字体大小
+  double _fontSize = 14;
+
+  // +添加数字标签，当前添加计数
+  int _addCount = 0;
+
+  // 初始标签标题列表
+  final List<String> _initTagItemTitles = [
     '0',
     'SDK',
     'plugin updates',
@@ -67,21 +92,17 @@ class _MyHomePageState extends State<MyHomePage>
     '篝火营地',
   ];
 
-  bool _symmetry = false;
-  bool _removeButton = true;
-  bool _singleItem = true;
-  bool _startDirection = false;
-  bool _horizontalScroll = true;
-  bool _withSuggesttions = false;
-  int _count = 0;
-  int _column = 0;
-  double _fontSize = 14;
+  // 拷贝标签标题列表
+  List _tagItemTitles;
 
-  String _itemCombine = 'withTextBefore';
-
-  String _onPressed = '';
-
-  List _icon = [Icons.home, Icons.language, Icons.headset];
+  var _mapStr2TagItemCombine = {
+    'onlyText': TagItemCombine.onlyText,
+    'onlyIcon': TagItemCombine.onlyIcon,
+    'onlyImage': TagItemCombine.onlyImage,
+    'imageOrIconOrText': TagItemCombine.imageOrIconOrText,
+    'withTextAfter': TagItemCombine.withTextAfter,
+    'withTextBefore': TagItemCombine.withTextBefore,
+  };
 
   @override
   void initState() {
@@ -89,12 +110,10 @@ class _MyHomePageState extends State<MyHomePage>
     _tabController = TabController(length: 2, vsync: this);
     _scrollViewController = ScrollController();
 
-    _items = _list.toList();
+    _tagItemTitles = _initTagItemTitles.toList();
   }
 
-  List _items;
-
-  final GlobalKey<TagsState> _tagStateKey = GlobalKey<TagsState>();
+  final GlobalKey<TagPanelState> _tagPanelKey = GlobalKey<TagPanelState>();
 
   @override
   Widget build(BuildContext context) {
@@ -169,10 +188,11 @@ class _MyHomePageState extends State<MyHomePage>
                                 child: Row(
                                   children: <Widget>[
                                     Checkbox(
-                                        value: _symmetry,
+                                        value: _symmetryArrangement,
                                         onChanged: (a) {
                                           setState(() {
-                                            _symmetry = !_symmetry;
+                                            _symmetryArrangement =
+                                                !_symmetryArrangement;
                                           });
                                         }),
                                     Text('Symmetry')
@@ -180,7 +200,8 @@ class _MyHomePageState extends State<MyHomePage>
                                 ),
                                 onTap: () {
                                   setState(() {
-                                    _symmetry = !_symmetry;
+                                    _symmetryArrangement =
+                                        !_symmetryArrangement;
                                   });
                                 },
                               ),
@@ -188,13 +209,13 @@ class _MyHomePageState extends State<MyHomePage>
                                 padding: EdgeInsets.all(5),
                               ),
                               DropdownButton(
-                                hint: _column == 0
+                                hint: _symmetryColumnPerRow == 0
                                     ? Text("None")
-                                    : Text(_column.toString()),
-                                items: _buildItems(),
+                                    : Text(_symmetryColumnPerRow.toString()),
+                                items: _symmetryMenuItems(),
                                 onChanged: (a) {
                                   setState(() {
-                                    _column = a;
+                                    _symmetryColumnPerRow = a;
                                   });
                                 },
                               ),
@@ -214,7 +235,7 @@ class _MyHomePageState extends State<MyHomePage>
                                                 !_horizontalScroll;
                                           });
                                         }),
-                                    Text('Horizontal scroll')
+                                    Text('Horizontal Scroll')
                                   ],
                                 ),
                                 onTap: () {
@@ -227,18 +248,19 @@ class _MyHomePageState extends State<MyHomePage>
                                 child: Row(
                                   children: <Widget>[
                                     Checkbox(
-                                        value: _singleItem,
+                                        value: _singleSelection,
                                         onChanged: (a) {
                                           setState(() {
-                                            _singleItem = !_singleItem;
+                                            _singleSelection =
+                                                !_singleSelection;
                                           });
                                         }),
-                                    Text('Single Item')
+                                    Text('Single Selection')
                                   ],
                                 ),
                                 onTap: () {
                                   setState(() {
-                                    _singleItem = !_singleItem;
+                                    _singleSelection = !_singleSelection;
                                   });
                                 },
                               ),
@@ -275,8 +297,9 @@ class _MyHomePageState extends State<MyHomePage>
                                       icon: Icon(Icons.add),
                                       onPressed: () {
                                         setState(() {
-                                          _count++;
-                                          _items.add(_count.toString());
+                                          _addCount++;
+                                          _tagItemTitles
+                                              .add(_addCount.toString());
                                           //_items.removeAt(3); _items.removeAt(10);
                                         });
                                       },
@@ -296,7 +319,8 @@ class _MyHomePageState extends State<MyHomePage>
                                       icon: Icon(Icons.refresh),
                                       onPressed: () {
                                         setState(() {
-                                          _items = _list.toList();
+                                          _tagItemTitles =
+                                              _initTagItemTitles.toList();
                                         });
                                       },
                                     ),
@@ -311,7 +335,7 @@ class _MyHomePageState extends State<MyHomePage>
                     Padding(
                       padding: EdgeInsets.all(20),
                     ),
-                    _tags1,
+                    _tagPanel1,
                     Container(
                         padding: EdgeInsets.all(20),
                         child: Column(
@@ -321,7 +345,7 @@ class _MyHomePageState extends State<MyHomePage>
                             ),
                             Padding(
                               padding: EdgeInsets.symmetric(vertical: 20),
-                              child: Text(_onPressed),
+                              child: Text('--- Demo 1 ---'),
                             ),
                           ],
                         )),
@@ -349,11 +373,11 @@ class _MyHomePageState extends State<MyHomePage>
                                 child: Row(
                                   children: <Widget>[
                                     Checkbox(
-                                        value: _withSuggesttions,
+                                        value: _showSuggesttions,
                                         onChanged: (a) {
                                           setState(() {
-                                            _withSuggesttions =
-                                                !_withSuggesttions;
+                                            _showSuggesttions =
+                                                !_showSuggesttions;
                                           });
                                         }),
                                     Text('Suggestions')
@@ -361,7 +385,7 @@ class _MyHomePageState extends State<MyHomePage>
                                 ),
                                 onTap: () {
                                   setState(() {
-                                    _withSuggesttions = !_withSuggesttions;
+                                    _showSuggesttions = !_showSuggesttions;
                                   });
                                 },
                               ),
@@ -369,11 +393,11 @@ class _MyHomePageState extends State<MyHomePage>
                                 padding: EdgeInsets.all(20),
                               ),
                               DropdownButton(
-                                hint: Text(_itemCombine),
-                                items: _buildItems2(),
+                                hint: Text(_tagItemCombine),
+                                items: _combineMenuItems(),
                                 onChanged: (val) {
                                   setState(() {
-                                    _itemCombine = val;
+                                    _tagItemCombine = val;
                                   });
                                 },
                               ),
@@ -393,7 +417,7 @@ class _MyHomePageState extends State<MyHomePage>
                                                 !_horizontalScroll;
                                           });
                                         }),
-                                    Text('Horizontal scroll')
+                                    Text('Horizontal Scroll')
                                   ],
                                 ),
                                 onTap: () {
@@ -450,7 +474,7 @@ class _MyHomePageState extends State<MyHomePage>
                     Padding(
                       padding: EdgeInsets.all(20),
                     ),
-                    _tags2,
+                    _tagPanel2,
                     Container(
                         padding: EdgeInsets.all(20),
                         child: Column(
@@ -460,7 +484,7 @@ class _MyHomePageState extends State<MyHomePage>
                             ),
                             Padding(
                               padding: EdgeInsets.symmetric(vertical: 20),
-                              child: Text(_onPressed),
+                              child: Text('--- Demo 2 ---'),
                             ),
                           ],
                         )),
@@ -472,40 +496,34 @@ class _MyHomePageState extends State<MyHomePage>
     );
   }
 
-  Widget get _tags1 {
-    return Tags(
-      key: _tagStateKey,
-      symmetry: _symmetry,
-      columns: _column,
+  Widget get _tagPanel1 {
+    return TagPanel(
+      key: _tagPanelKey,
+      symmetry: _symmetryArrangement,
+      columns: _symmetryColumnPerRow,
       horizontalScroll: _horizontalScroll,
       //verticalDirection: VerticalDirection.up, textDirection: TextDirection.rtl,
       heightHorizontalScroll: 60 * (_fontSize / 14),
-      itemCount: _items.length,
+      itemCount: _tagItemTitles.length,
       itemBuilder: (index) {
-        final item = _items[index];
+        final item = _tagItemTitles[index];
 
-        return ItemTags(
+        return TagItem(
           key: Key(index.toString()),
           index: index,
           title: item,
           pressEnabled: true,
           activeColor: Colors.blueGrey[600],
-          singleItem: _singleItem,
+          singleSelection: _singleSelection,
           splashColor: Colors.green,
-          combine: ItemTagsCombine.withTextBefore,
-          image: index > 0 && index < 5
-              ? ItemTagsImage(image: AssetImage("img/p$index.jpg"))
-              : null,
-          icon: (item == '0' || item == '1' || item == '2')
-              ? ItemTagsIcon(
-                  icon: _icon[int.parse(item)],
-                )
-              : null,
+          combine: TagItemCombine.withTextBefore,
+          image: null,
+          icon: null,
           removeButton: _removeButton
-              ? ItemTagsRemoveButton(
+              ? TagItemRemoveButton(
                   onRemoved: () {
                     setState(() {
-                      _items.removeAt(index);
+                      _tagItemTitles.removeAt(index);
                     });
                     return true;
                   },
@@ -525,71 +543,43 @@ class _MyHomePageState extends State<MyHomePage>
   // Position for popup menu
   Offset _tapPosition;
 
-  Widget get _tags2 {
+  Widget get _tagPanel2 {
+    TagItemCombine combine =
+        _mapStr2TagItemCombine[_tagItemCombine] ?? TagItemCombine.onlyText;
+
     //popup Menu
     final RenderBox overlay = Overlay.of(context).context?.findRenderObject();
 
-    ItemTagsCombine combine = ItemTagsCombine.onlyText;
-
-    switch (_itemCombine) {
-      case 'onlyText':
-        combine = ItemTagsCombine.onlyText;
-        break;
-      case 'onlyIcon':
-        combine = ItemTagsCombine.onlyIcon;
-        break;
-      case 'onlyIcon':
-        combine = ItemTagsCombine.onlyIcon;
-        break;
-      case 'onlyImage':
-        combine = ItemTagsCombine.onlyImage;
-        break;
-      case 'imageOrIconOrText':
-        combine = ItemTagsCombine.imageOrIconOrText;
-        break;
-      case 'withTextAfter':
-        combine = ItemTagsCombine.withTextAfter;
-        break;
-      case 'withTextBefore':
-        combine = ItemTagsCombine.withTextBefore;
-        break;
-    }
-
-    return Tags(
+    return TagPanel(
       key: Key("2"),
-      symmetry: _symmetry,
-      columns: _column,
+      symmetry: _symmetryArrangement,
+      columns: _symmetryColumnPerRow,
       horizontalScroll: _horizontalScroll,
       verticalDirection:
           _startDirection ? VerticalDirection.up : VerticalDirection.down,
       textDirection: _startDirection ? TextDirection.rtl : TextDirection.ltr,
       heightHorizontalScroll: 60 * (_fontSize / 14),
-      textField: _textField,
-      itemCount: _items.length,
+      textField: _addTagTextField,
+      itemCount: _tagItemTitles.length,
       itemBuilder: (index) {
-        final item = _items[index];
+        final item = _tagItemTitles[index];
 
+        // 包裹手势控件，支持长按浮出菜单
         return GestureDetector(
-          child: ItemTags(
+          child: TagItem(
             key: Key(index.toString()),
             index: index,
             title: item,
             pressEnabled: false,
             activeColor: Colors.green[400],
             combine: combine,
-            image: index > 0 && index < 5
-                ? ItemTagsImage(image: AssetImage("img/p$index.jpg"))
-                : null,
-            icon: (item == '0' || item == '1' || item == '2')
-                ? ItemTagsIcon(
-                    icon: _icon[int.parse(item)],
-                  )
-                : null,
-            removeButton: ItemTagsRemoveButton(
+            image: null,
+            icon: null,
+            removeButton: TagItemRemoveButton(
               backgroundColor: Colors.green[900],
               onRemoved: () {
                 setState(() {
-                  _items.removeAt(index);
+                  _tagItemTitles.removeAt(index);
                 });
                 return true;
               },
@@ -636,7 +626,7 @@ class _MyHomePageState extends State<MyHomePage>
     );
   }
 
-  TagsTextField get _textField {
+  TagsTextField get _addTagTextField {
     return TagsTextField(
       autofocus: false,
       width: double.infinity,
@@ -647,7 +637,7 @@ class _MyHomePageState extends State<MyHomePage>
       ),
       enabled: true,
       constraintSuggestion: true,
-      suggestions: _withSuggesttions
+      suggestions: _showSuggesttions
           ? [
               "One",
               "two",
@@ -669,20 +659,20 @@ class _MyHomePageState extends State<MyHomePage>
           : null,
       onSubmitted: (String str) {
         setState(() {
-          _items.add(str);
+          _tagItemTitles.add(str);
         });
       },
     );
   }
 
-  List<DropdownMenuItem> _buildItems() {
+  List<DropdownMenuItem> _symmetryMenuItems() {
     List<DropdownMenuItem> list = [];
 
-    int count = 19;
+    int count = 8;
 
     list.add(
       DropdownMenuItem(
-        child: Text("Not set"),
+        child: Text("None"),
         value: 0,
       ),
     );
@@ -698,7 +688,7 @@ class _MyHomePageState extends State<MyHomePage>
     return list;
   }
 
-  List<DropdownMenuItem> _buildItems2() {
+  List<DropdownMenuItem> _combineMenuItems() {
     List<DropdownMenuItem> list = [];
 
     list.add(DropdownMenuItem(
@@ -726,7 +716,6 @@ class _MyHomePageState extends State<MyHomePage>
       child: Text("withTextAfter"),
       value: 'withTextAfter',
     ));
-
     return list;
   }
 }

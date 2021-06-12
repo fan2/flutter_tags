@@ -7,8 +7,8 @@ import 'package:flutter_tags/src/suggestions_textfield.dart';
 ///ItemBuilder
 typedef Widget ItemBuilder(int index);
 
-class Tags extends StatefulWidget {
-  Tags(
+class TagPanel extends StatefulWidget {
+  TagPanel(
       {this.columns,
       this.itemCount = 0,
       this.symmetry = false,
@@ -44,31 +44,31 @@ class Tags extends StatefulWidget {
   /// ability to scroll tags horizontally
   final bool horizontalScroll;
 
-  /// horizontal spacing of  the [ItemTags]
+  /// horizontal spacing of  the [TagItem]
   final double heightHorizontalScroll;
 
-  /// horizontal spacing of  the [ItemTags]
+  /// horizontal spacing of  the [TagItem]
   final double spacing;
 
-  /// vertical spacing of  the [ItemTags]
+  /// vertical spacing of  the [TagItem]
   final double runSpacing;
 
-  /// horizontal alignment of  the [ItemTags]
+  /// horizontal alignment of  the [TagItem]
   final WrapAlignment alignment;
 
-  /// vertical alignment of  the [ItemTags]
+  /// vertical alignment of  the [TagItem]
   final WrapAlignment runAlignment;
 
-  /// direction of  the [ItemTags]
+  /// direction of  the [TagItem]
   final Axis direction;
 
-  /// Iterate [Item] from the lower to the upper direction or vice versa
+  /// Iterate [TagItemData] from the lower to the upper direction or vice versa
   final VerticalDirection verticalDirection;
 
-  /// Text direction of  the [ItemTags]
+  /// Text direction of  the [TagItem]
   final TextDirection textDirection;
 
-  /// Generates a list of [ItemTags].
+  /// Generates a list of [TagItem].
   ///
   /// Creates a list with [length] positions and fills it with values created by
   /// calling [generator] for each index in the range `0` .. `length - 1`
@@ -79,17 +79,18 @@ class Tags extends StatefulWidget {
   final TagsTextField textField;
 
   @override
-  TagsState createState() => TagsState();
+  TagPanelState createState() => TagPanelState();
 }
 
-class TagsState extends State<Tags> {
+class TagPanelState extends State<TagPanel> {
   final GlobalKey _containerKey = GlobalKey();
   Orientation _orientation = Orientation.portrait;
   double _width = 0;
 
-  final List<DataList> _list = List();
+  final List<TagItemContext> _cxtList = [];
 
-  List<Item> get getAllItem => _list.toList();
+  // 返回标签数据 TagItemData 列表，以便遍历标签状态
+  List<TagItemData> get getAllItemData => _cxtList.toList();
 
   //get the current width of the screen
   void _getWidthContext() {
@@ -143,8 +144,8 @@ class TagsState extends State<Tags> {
         children: _buildItems(),
       );
 
-    return DataListInherited(
-      list: _list,
+    return TagPanelInherited(
+      cxtList: _cxtList,
       symmetry: widget.symmetry,
       itemCount: widget.itemCount,
       child: child,
@@ -164,11 +165,12 @@ class TagsState extends State<Tags> {
               tagsTextField: widget.textField,
               onSubmitted: (String str) {
                 if (!widget.textField.duplicates) {
-                  final List<DataList> lst =
-                      _list.where((l) => l.title == str).toList();
-
+                  // 遍历现有标签，查找出重复的
+                  final List<TagItemContext> lst =
+                      _cxtList.where((l) => l.title == str).toList();
+                  // 将已有标签标记为重复
                   if (lst.isNotEmpty) {
-                    lst.forEach((d) => d.showDuplicate = true);
+                    lst.forEach((d) => d.duplicated = true);
                     return;
                   }
                 }
@@ -180,7 +182,7 @@ class TagsState extends State<Tags> {
           )
         : null;
 
-    List<Widget> finalList = List();
+    List<Widget> finalList = [];
 
     List<Widget> itemList = List.generate(widget.itemCount, (i) {
       final Widget item = widget.itemBuilder(i);
@@ -231,36 +233,36 @@ class TagsState extends State<Tags> {
 }
 
 /// Inherited Widget
-class DataListInherited extends InheritedWidget {
-  DataListInherited(
-      {Key key, this.list, this.symmetry, this.itemCount, Widget child})
+class TagPanelInherited extends InheritedWidget {
+  TagPanelInherited(
+      {Key key, this.cxtList, this.symmetry, this.itemCount, Widget child})
       : super(key: key, child: child);
 
-  final List<DataList> list;
+  final List<TagItemContext> cxtList;
   final bool symmetry;
   final int itemCount;
 
   @override
-  bool updateShouldNotify(DataListInherited old) {
+  bool updateShouldNotify(TagPanelInherited old) {
     //print("inherited");
     return false;
   }
 
-  /*static DataListInherited of(BuildContext context) =>
-      context.inheritFromWidgetOfExactType(DataListInherited);*/
-  static DataListInherited of(BuildContext context) =>
+  /*static TagPanelProxy of(BuildContext context) =>
+      context.inheritFromWidgetOfExactType(TagPanelProxy);*/
+  static TagPanelInherited of(BuildContext context) =>
       context.dependOnInheritedWidgetOfExactType();
 }
 
 /// Data List
-class DataList extends ValueNotifier implements Item {
-  DataList(
+class TagItemContext extends ValueNotifier implements TagItemData {
+  TagItemContext(
       {@required this.title,
       this.index,
       bool highlights = false,
       bool active = true,
       this.customData})
-      : _showDuplicate = highlights,
+      : _duplicated = highlights,
         _active = active,
         super(active);
 
@@ -268,21 +270,24 @@ class DataList extends ValueNotifier implements Item {
   final dynamic customData;
   final int index;
 
-  get showDuplicate {
-    final val = _showDuplicate;
-    _showDuplicate = false;
+  /// 红色高亮显示已有重复标签
+  bool _duplicated;
+
+  get duplicated {
+    final val = _duplicated;
+    _duplicated = false;
     return val;
   }
 
-  bool _showDuplicate;
-  set showDuplicate(bool a) {
-    _showDuplicate = a;
+  set duplicated(bool a) {
+    _duplicated = a;
     // rebuild only the specific Item that changes its value
     notifyListeners();
   }
 
-  get active => _active;
+  /// 是否为被选中状态
   bool _active;
+  get active => _active;
   set active(bool a) {
     _active = a;
     // rebuild only the specific Item that changes its value
