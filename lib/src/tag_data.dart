@@ -36,7 +36,7 @@ class TagItemData {
 
   @override
   String toString() {
-    return "id:$index, title: $title, active: $active, customData: $customData";
+    return "id:$index, active: $active, title: $title, customData: $customData";
   }
 }
 

@@ -42,7 +42,7 @@ class _MyHomePageState extends State<MyHomePage>
   /// 禁用 _horizontalScroll 自动折行或开启 symmetryArrangement，排版受该参数影响
   int _columnPerRow = 0;
   // 单选模式
-  bool _singleSelection = true;
+  bool _singleSelection = false;
 
   // 字体大小
   double _fontSize = 14;

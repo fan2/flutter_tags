@@ -26,7 +26,7 @@ class TagItem extends StatefulWidget {
       {@required this.index,
       @required this.title,
       this.textScaleFactor,
-      this.active = true,
+      this.active = false,
       this.pressEnabled = true,
       this.customData,
       this.textStyle = const TextStyle(fontSize: 14),
@@ -176,14 +176,14 @@ class _TagItemState extends State<TagItem> {
           TagItemContext(
               title: widget.title,
               index: widget.index,
-              active: widget.singleSelection ? false : widget.active,
+              active: widget.active,
               customData: widget.customData));
     } else if (_tagPanelIn.cxtList.elementAt(widget.index) == null) {
       //print("replace");
       _tagPanelIn.cxtList[widget.index] = TagItemContext(
           title: widget.title,
           index: widget.index,
-          active: widget.singleSelection ? false : widget.active,
+          active: widget.active,
           customData: widget.customData);
     }
 
@@ -249,9 +249,8 @@ class _TagItemState extends State<TagItem> {
             ? () {
                 if (widget.singleSelection) {
                   _deactivateOtherItems(_tagPanelIn, _tagItemCxt);
-                  _tagItemCxt.active = true;
-                } else
-                  _tagItemCxt.active = !_tagItemCxt.active;
+                }
+                _tagItemCxt.active = !_tagItemCxt.active;
 
                 if (widget.onPressed != null)
                   widget.onPressed(TagItemData(
