@@ -400,13 +400,15 @@ class _TagItemState extends State<TagItem> {
                           borderRadius: widget.removeButton.borderRadius ??
                               BorderRadius.circular(_initBorderRadius),
                         ),
-                        child: widget.removeButton.padding ??
-                            Icon(
-                              Icons.clear,
-                              color: widget.removeButton.color ?? Colors.white,
-                              size: (widget.removeButton.size ?? 12) *
-                                  (widget.textStyle.fontSize / 14),
-                            ),
+                        child: widget.removeButton.icon != null
+                            ? Icon(widget.removeButton.icon)
+                            : Icon(
+                                Icons.clear,
+                                color:
+                                    widget.removeButton.color ?? Colors.white,
+                                size: (widget.removeButton.size ?? 12) *
+                                    (widget.textStyle.fontSize / 14),
+                              ),
                       ),
                       onTap: () {
                         if (widget.removeButton.onRemoved != null) {
