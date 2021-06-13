@@ -44,7 +44,7 @@ class _MyHomePageState extends State<MyHomePage>
   /// 禁用 _horizontalScroll 自动折行或开启 symmetryArrangement，排版受该参数影响
   int _columnPerRow = 0;
   // 单选模式：只影响 Demo 1，Demo 2 不支持点选
-  bool _singleSelection = true;
+  bool _singleSelection = false;
 
   // 显示推荐：只影响 Demo 2 _addTagTextField
   bool _showSuggesttions = false;
@@ -590,6 +590,7 @@ class _MyHomePageState extends State<MyHomePage>
             key: Key(index.toString()),
             index: index,
             title: item,
+            active: true,
             pressEnabled: false,
             activeColor: Colors.green[400],
             combineMode: combineMode,
