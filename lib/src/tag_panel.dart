@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../flutter_tags.dart';
+export 'tag_data.dart';
 import 'util/custom_wrap.dart';
 import 'package:flutter_tags/src/suggestions_textfield.dart';
 
@@ -76,6 +77,7 @@ class TagPanel extends StatefulWidget {
   final ItemBuilder itemBuilder;
 
   /// custom TextField
+  /// 后续考虑追加+按钮，调起showTextInputDialog输入新增标签
   final TagsTextField textField;
 
   @override
@@ -87,9 +89,10 @@ class TagPanelState extends State<TagPanel> {
   Orientation _orientation = Orientation.portrait;
   double _width = 0;
 
+  // 内部继承扩展 TagItemData，支持 KVO 通知单个标签刷新
   final List<TagItemContext> _cxtList = [];
 
-  // 返回标签数据 TagItemData 列表，以便遍历标签状态
+  // 向外暴露基类状态数据 TagItemData 列表，以便遍历标签状态
   List<TagItemData> get getAllItemData => _cxtList.toList();
 
   //get the current width of the screen
@@ -125,7 +128,7 @@ class TagPanelState extends State<TagPanel> {
           scrollDirection: Axis.horizontal,
           shrinkWrap: true,
           physics: ClampingScrollPhysics(),
-          children: _buildItems(),
+          children: _buildTagItems(),
         ),
       );
     else
@@ -141,9 +144,10 @@ class TagPanelState extends State<TagPanel> {
         direction: widget.direction,
         verticalDirection: widget.verticalDirection,
         crossAxisAlignment: WrapCrossAlignment.end,
-        children: _buildItems(),
+        children: _buildTagItems(),
       );
 
+    // TagPanelState._cxtList 传入 TagPanelInherited
     return TagPanelInherited(
       cxtList: _cxtList,
       symmetry: widget.symmetry,
@@ -152,14 +156,14 @@ class TagPanelState extends State<TagPanel> {
     );
   }
 
-  List<Widget> _buildItems() {
+  List<Widget> _buildTagItems() {
     /*if(_list.length < widget.itemCount)
             _list.clear();*/
 
     final Widget textField = widget.textField != null
         ? Container(
             alignment: Alignment.center,
-            width: widget.symmetry ? _widthCalc() : widget.textField.width,
+            width: widget.symmetry ? _calcWidth() : widget.textField.width,
             padding: widget.textField.padding,
             child: SuggestionsTextField(
               tagsTextField: widget.textField,
@@ -188,7 +192,7 @@ class TagPanelState extends State<TagPanel> {
       final Widget item = widget.itemBuilder(i);
       if (widget.symmetry)
         return Container(
-          width: _widthCalc(),
+          width: _calcWidth(),
           child: item,
         );
       else if (widget.horizontalScroll)
@@ -221,7 +225,7 @@ class TagPanelState extends State<TagPanel> {
   }
 
   //Container width divided by the number of columns when symmetry is active
-  double _widthCalc() {
+  double _calcWidth() {
     int columns = widget.columns ?? 0;
     int margin = widget.spacing.round();
 
@@ -229,68 +233,5 @@ class TagPanelState extends State<TagPanel> {
     double width = (_width > 1) ? (_width - subtraction) / columns : _width;
 
     return width;
-  }
-}
-
-/// Inherited Widget
-class TagPanelInherited extends InheritedWidget {
-  TagPanelInherited(
-      {Key key, this.cxtList, this.symmetry, this.itemCount, Widget child})
-      : super(key: key, child: child);
-
-  final List<TagItemContext> cxtList;
-  final bool symmetry;
-  final int itemCount;
-
-  @override
-  bool updateShouldNotify(TagPanelInherited old) {
-    //print("inherited");
-    return false;
-  }
-
-  /*static TagPanelProxy of(BuildContext context) =>
-      context.inheritFromWidgetOfExactType(TagPanelProxy);*/
-  static TagPanelInherited of(BuildContext context) =>
-      context.dependOnInheritedWidgetOfExactType();
-}
-
-/// Data List
-class TagItemContext extends ValueNotifier implements TagItemData {
-  TagItemContext(
-      {@required this.title,
-      this.index,
-      bool highlights = false,
-      bool active = true,
-      this.customData})
-      : _duplicated = highlights,
-        _active = active,
-        super(active);
-
-  final String title;
-  final dynamic customData;
-  final int index;
-
-  /// 红色高亮显示已有重复标签
-  bool _duplicated;
-
-  get duplicated {
-    final val = _duplicated;
-    _duplicated = false;
-    return val;
-  }
-
-  set duplicated(bool a) {
-    _duplicated = a;
-    // rebuild only the specific Item that changes its value
-    notifyListeners();
-  }
-
-  /// 是否为被选中状态
-  bool _active;
-  get active => _active;
-  set active(bool a) {
-    _active = a;
-    // rebuild only the specific Item that changes its value
-    notifyListeners();
   }
 }

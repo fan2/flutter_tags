@@ -351,7 +351,6 @@ class _MyHomePageState extends State<MyHomePage>
           activeColor: Colors.blueGrey[600],
           singleSelection: _singleSelection,
           splashColor: Colors.green,
-          combine: TagItemCombine.withTextBefore,
           image: null,
           icon: null,
           removeButton: _removeButton
