@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
-import 'package:flutter_tags/src/tag_panel.dart';
+import 'package:flutter_tags/src/tag_data.dart';
 
 /// Used by [TagItem.onPressed].
 typedef OnPressedCallback = void Function(TagItemData i);
@@ -12,13 +12,13 @@ typedef OnLongPressedCallback = void Function(TagItemData i);
 typedef OnRemovedCallback = bool Function();
 
 /// combines icon text or image
-enum TagItemCombine {
+enum TagItemCombineMode {
   onlyText,
   onlyIcon,
   onlyImage,
-  imageOrIconOrText,
-  withTextBefore,
-  withTextAfter
+  imageOrIconOrText, // image or icon
+  withTextBefore, // text + image/icon
+  withTextAfter // image/icon + text
 }
 
 class TagItem extends StatefulWidget {
@@ -31,7 +31,7 @@ class TagItem extends StatefulWidget {
       this.customData,
       this.textStyle = const TextStyle(fontSize: 14),
       this.alignment = MainAxisAlignment.center,
-      this.combine = TagItemCombine.imageOrIconOrText,
+      this.combineMode = TagItemCombineMode.imageOrIconOrText,
       this.icon,
       this.image,
       this.removeButton,
@@ -47,7 +47,7 @@ class TagItem extends StatefulWidget {
       this.activeColor = Colors.blueGrey,
       this.highlightColor,
       this.splashColor,
-      this.duplicatedColor = Colors.red,
+      this.duplicatedColor,
       this.onPressed,
       this.onLongPressed,
       Key key})
@@ -74,7 +74,7 @@ class TagItem extends StatefulWidget {
   final dynamic customData;
 
   /// TagItemCombine (text,icon,textIcon,textImage) of [TagItem]
-  final TagItemCombine combine;
+  final TagItemCombineMode combineMode;
 
   /// Icon of [TagItem]
   final TagItemIcon icon;
@@ -212,13 +212,17 @@ class _TagItemState extends State<TagItem> {
 
   @override
   Widget build(BuildContext context) {
+    // 依赖了 TagPanelInherited 的数据成员 cxtList
     _setItemContext();
 
     final double fontSize = widget.textStyle.fontSize;
 
     Color color = _tagItemCxt.active ? widget.activeColor : widget.color;
 
-    if (_tagItemCxt.duplicated) color = widget.duplicatedColor;
+    // 如果配置了重复颜色则高亮标记
+    if (_tagItemCxt.duplicated && widget.duplicatedColor != null) {
+      color = widget.duplicatedColor;
+    }
 
     return Material(
       color: color,
@@ -240,7 +244,7 @@ class _TagItemState extends State<TagItem> {
                 borderRadius: widget.borderRadius ??
                     BorderRadius.circular(_initBorderRadius)),
             padding: widget.padding * (fontSize / 14),
-            child: _combine),
+            child: _buildTagItem()),
         onTap: widget.pressEnabled
             ? () {
                 if (widget.singleSelection) {
@@ -268,7 +272,7 @@ class _TagItemState extends State<TagItem> {
     );
   }
 
-  Widget get _combine {
+  Widget _buildTagItem() {
     if (widget.image != null)
       assert((widget.image.image != null && widget.image.child == null) ||
           (widget.image.child != null && widget.image.image == null));
@@ -283,10 +287,11 @@ class _TagItemState extends State<TagItem> {
     final Widget icon = widget.icon != null
         ? Container(
             padding: widget.icon.padding ??
-                (widget.combine == TagItemCombine.onlyIcon ||
-                        widget.combine == TagItemCombine.imageOrIconOrText
+                (widget.combineMode == TagItemCombineMode.onlyIcon ||
+                        widget.combineMode ==
+                            TagItemCombineMode.imageOrIconOrText
                     ? null
-                    : widget.combine == TagItemCombine.withTextAfter
+                    : widget.combineMode == TagItemCombineMode.withTextAfter
                         ? EdgeInsets.only(right: 5)
                         : EdgeInsets.only(left: 5)),
             child: Icon(
@@ -299,10 +304,11 @@ class _TagItemState extends State<TagItem> {
     final Widget image = widget.image != null
         ? Container(
             padding: widget.image.padding ??
-                (widget.combine == TagItemCombine.onlyImage ||
-                        widget.combine == TagItemCombine.imageOrIconOrText
+                (widget.combineMode == TagItemCombineMode.onlyImage ||
+                        widget.combineMode ==
+                            TagItemCombineMode.imageOrIconOrText
                     ? null
-                    : widget.combine == TagItemCombine.withTextAfter
+                    : widget.combineMode == TagItemCombineMode.withTextAfter
                         ? EdgeInsets.only(right: 5)
                         : EdgeInsets.only(left: 5)),
             child: widget.image.child ??
@@ -317,30 +323,35 @@ class _TagItemState extends State<TagItem> {
 
     final List list = [];
 
-    switch (widget.combine) {
-      case TagItemCombine.onlyText:
+    switch (widget.combineMode) {
+      case TagItemCombineMode.onlyText:
         list.add(text);
         break;
-      case TagItemCombine.onlyIcon:
+      case TagItemCombineMode.onlyIcon:
         list.add(icon);
         break;
-      case TagItemCombine.onlyImage:
+      case TagItemCombineMode.onlyImage:
         list.add(image);
         break;
-      case TagItemCombine.imageOrIconOrText:
+      case TagItemCombineMode.imageOrIconOrText:
         list.add((image != text ? image : icon));
         break;
-      case TagItemCombine.withTextBefore:
+      case TagItemCombineMode.withTextBefore:
         list.add(text);
-        if (image != text)
+        if (image != text) {
           list.add(image);
-        else if (icon != text) list.add(icon);
+        } else if (icon != text) {
+          list.add(icon);
+        }
         break;
-      case TagItemCombine.withTextAfter:
-        if (image != text)
+      case TagItemCombineMode.withTextAfter:
+        if (image != text) {
           list.add(image);
-        else if (icon != text) list.add(icon);
+        } else if (icon != text) {
+          list.add(icon);
+        }
         list.add(text);
+        break;
     }
 
     final Widget row = Row(
@@ -349,11 +360,13 @@ class _TagItemState extends State<TagItem> {
         children: List.generate(list.length, (i) {
           if (i == 0 && list.length > 1)
             return Flexible(
-              flex: widget.combine == TagItemCombine.withTextAfter ? 0 : 1,
+              flex: widget.combineMode == TagItemCombineMode.withTextAfter
+                  ? 0
+                  : 1,
               child: list[i],
             );
           return Flexible(
-            flex: widget.combine == TagItemCombine.withTextAfter ||
+            flex: widget.combineMode == TagItemCombineMode.withTextAfter ||
                     list.length == 1
                 ? 1
                 : 0,
@@ -410,20 +423,22 @@ class _TagItemState extends State<TagItem> {
 
   ///Text Alignment
   TextAlign get _textAlignment {
+    TextAlign ta;
     switch (widget.alignment) {
       case MainAxisAlignment.spaceBetween:
       case MainAxisAlignment.start:
-        return TextAlign.start;
+        ta = TextAlign.start;
         break;
       case MainAxisAlignment.end:
-        return TextAlign.end;
+        ta = TextAlign.end;
         break;
       case MainAxisAlignment.spaceAround:
       case MainAxisAlignment.spaceEvenly:
       case MainAxisAlignment.center:
-        return TextAlign.center;
+        ta = TextAlign.center;
+        break;
     }
-    return null;
+    return ta;
   }
 
   ///TextStyle
@@ -439,20 +454,6 @@ class _TagItemState extends State<TagItem> {
     panelIn.cxtList.where((tg) {
       return tg?.active == true && tg != itemCxt;
     }).forEach((tg) => tg.active = false);
-  }
-}
-
-///callback
-class TagItemData {
-  TagItemData({this.index, this.title, this.active, this.customData});
-  final int index;
-  final String title;
-  final bool active;
-  final dynamic customData;
-
-  @override
-  String toString() {
-    return "id:$index, title: $title, active: $active, customData: $customData";
   }
 }
 

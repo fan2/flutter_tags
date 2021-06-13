@@ -49,7 +49,7 @@ class _MyHomePageState extends State<MyHomePage>
   // 显示推荐：只影响 Demo 2 _addTagTextField
   bool _showSuggesttions = false;
   // 组合方式：只影响 Demo 2 _combineMenuItems
-  String _tagItemCombine = 'withTextBefore';
+  String _tagItemCombineMode = 'withTextBefore';
   // 读取顺序：只影响 Demo 2
   bool _startDirection = false;
 
@@ -97,13 +97,13 @@ class _MyHomePageState extends State<MyHomePage>
   // 拷贝标签标题列表
   List _tagItemTitles;
 
-  var _mapStr2TagItemCombine = {
-    'onlyText': TagItemCombine.onlyText,
-    'onlyIcon': TagItemCombine.onlyIcon,
-    'onlyImage': TagItemCombine.onlyImage,
-    'imageOrIconOrText': TagItemCombine.imageOrIconOrText,
-    'withTextAfter': TagItemCombine.withTextAfter,
-    'withTextBefore': TagItemCombine.withTextBefore,
+  var _mapStr2TagItemCombineMode = {
+    'onlyText': TagItemCombineMode.onlyText,
+    'onlyIcon': TagItemCombineMode.onlyIcon,
+    'onlyImage': TagItemCombineMode.onlyImage,
+    'imageOrIconOrText': TagItemCombineMode.imageOrIconOrText,
+    'withTextAfter': TagItemCombineMode.withTextAfter,
+    'withTextBefore': TagItemCombineMode.withTextBefore,
   };
 
   @override
@@ -408,11 +408,11 @@ class _MyHomePageState extends State<MyHomePage>
                                 padding: EdgeInsets.all(20),
                               ),
                               DropdownButton(
-                                hint: Text(_tagItemCombine),
+                                hint: Text(_tagItemCombineMode),
                                 items: _combineMenuItems(),
                                 onChanged: (val) {
                                   setState(() {
-                                    _tagItemCombine = val;
+                                    _tagItemCombineMode = val;
                                   });
                                 },
                               ),
@@ -533,7 +533,7 @@ class _MyHomePageState extends State<MyHomePage>
           activeColor: Colors.blueGrey[600],
           singleSelection: _singleSelection,
           splashColor: Colors.green,
-          combine: TagItemCombine.withTextBefore,
+          combineMode: TagItemCombineMode.withTextBefore,
           image: null,
           icon: null,
           removeButton: _removeButton
@@ -561,8 +561,9 @@ class _MyHomePageState extends State<MyHomePage>
   Offset _tapPosition;
 
   Widget get _tagPanel2 {
-    TagItemCombine combine =
-        _mapStr2TagItemCombine[_tagItemCombine] ?? TagItemCombine.onlyText;
+    TagItemCombineMode combineMode =
+        _mapStr2TagItemCombineMode[_tagItemCombineMode] ??
+            TagItemCombineMode.onlyText;
 
     //popup Menu
     final RenderBox overlay = Overlay.of(context).context?.findRenderObject();
@@ -591,7 +592,7 @@ class _MyHomePageState extends State<MyHomePage>
             title: item,
             pressEnabled: false,
             activeColor: Colors.green[400],
-            combine: combine,
+            combineMode: combineMode,
             image: null,
             icon: null,
             removeButton: TagItemRemoveButton(
