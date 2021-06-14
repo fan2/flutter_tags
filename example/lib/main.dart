@@ -33,7 +33,7 @@ class _MyHomePageState extends State<MyHomePage>
   TabController _tabController;
   ScrollController _scrollViewController;
 
-  // 移除按钮：只影响 Demo 1
+  // 移除按钮：只影响 Demo 1，同时支持点击和移除，移除按钮无法响应
   bool _removeButton = false;
   // 禁止横向滚动，自动折行排版：同时影响 Demo 1 和 Demo 2
   bool _horizontalScroll = true;
@@ -59,8 +59,8 @@ class _MyHomePageState extends State<MyHomePage>
   // Demo 1 + 添加数字标签，当前添加计数
   int _addCount = 0;
 
-  // 初始标签标题列表
-  final List<String> _initTagItemTitles = [
+  // TagPanel1 初始标签标题列表
+  final List<String> _initTagItemTitles1 = [
     '0',
     'SDK',
     'plugin updates',
@@ -77,6 +77,10 @@ class _MyHomePageState extends State<MyHomePage>
     'Select',
     'lorem ip',
     '9',
+  ];
+
+  // TagPanel2 初始标签标题列表
+  final List<String> _initTagItemTitles2 = [
     'Star',
     'Flutter Selectable Tags',
     '1',
@@ -95,7 +99,8 @@ class _MyHomePageState extends State<MyHomePage>
   ];
 
   // 拷贝标签标题列表
-  List _tagItemTitles;
+  List _tagItemTitles1;
+  List _tagItemTitles2;
 
   var _mapStr2TagItemCombineMode = {
     'onlyText': TagItemCombineMode.onlyText,
@@ -112,10 +117,12 @@ class _MyHomePageState extends State<MyHomePage>
     _tabController = TabController(length: 2, vsync: this);
     _scrollViewController = ScrollController();
 
-    _tagItemTitles = _initTagItemTitles.toList();
+    _tagItemTitles1 = _initTagItemTitles1.toList();
+    _tagItemTitles2 = _initTagItemTitles2.toList();
   }
 
-  final GlobalKey<TagPanelState> _tagPanelKey = GlobalKey<TagPanelState>();
+  final GlobalKey<TagPanelState> _tagPanelKey1 = GlobalKey<TagPanelState>();
+  final GlobalKey<TagPanelState> _tagPanelKey2 = GlobalKey<TagPanelState>();
 
   @override
   Widget build(BuildContext context) {
@@ -309,9 +316,11 @@ class _MyHomePageState extends State<MyHomePage>
                                       //color: Colors.white,
                                       icon: Icon(Icons.add),
                                       onPressed: () {
+                                        _tagPanelKey1.currentState
+                                            .appendATag(_addCount.toString());
                                         setState(() {
                                           _addCount++;
-                                          _tagItemTitles
+                                          _tagItemTitles1
                                               .add(_addCount.toString());
                                           //_items.removeAt(3); _items.removeAt(10);
                                         });
@@ -332,8 +341,8 @@ class _MyHomePageState extends State<MyHomePage>
                                       icon: Icon(Icons.refresh),
                                       onPressed: () {
                                         setState(() {
-                                          _tagItemTitles =
-                                              _initTagItemTitles.toList();
+                                          _tagItemTitles1 =
+                                              _initTagItemTitles1.toList();
                                         });
                                       },
                                     ),
@@ -513,15 +522,16 @@ class _MyHomePageState extends State<MyHomePage>
 
   Widget get _tagPanel1 {
     return TagPanel(
-      key: _tagPanelKey,
+      key: _tagPanelKey1,
       symmetry: _symmetryArrangement,
       columns: _columnPerRow,
       horizontalScroll: _horizontalScroll,
       //verticalDirection: VerticalDirection.up, textDirection: TextDirection.rtl,
       heightHorizontalScroll: 60 * (_fontSize / 14),
-      itemCount: _tagItemTitles.length,
+      itemCount: _tagItemTitles1.length,
       itemBuilder: (index) {
-        final item = _tagItemTitles[index];
+        final item = _tagItemTitles1[index];
+        _tagPanelKey1.currentState.appendATag(item);
 
         // pressEnabled: true, removeButton?,
         // pass singleSelection default true-!active
@@ -539,10 +549,10 @@ class _MyHomePageState extends State<MyHomePage>
           removeButton: _removeButton
               ? TagItemRemoveButton(
                   onRemoved: () {
+                    _tagPanelKey1.currentState.removeATag(index);
                     setState(() {
-                      _tagItemTitles.removeAt(index);
+                      _tagItemTitles1.removeAt(index);
                     });
-                    return true;
                   },
                 )
               : null,
@@ -569,7 +579,7 @@ class _MyHomePageState extends State<MyHomePage>
     final RenderBox overlay = Overlay.of(context).context?.findRenderObject();
 
     return TagPanel(
-      key: Key("2"),
+      key: _tagPanelKey2,
       symmetry: _symmetryArrangement,
       columns: _columnPerRow,
       horizontalScroll: _horizontalScroll,
@@ -578,9 +588,10 @@ class _MyHomePageState extends State<MyHomePage>
       textDirection: _startDirection ? TextDirection.rtl : TextDirection.ltr,
       heightHorizontalScroll: 60 * (_fontSize / 14),
       textField: _addTagTextField,
-      itemCount: _tagItemTitles.length,
+      itemCount: _tagItemTitles2.length,
       itemBuilder: (index) {
-        final item = _tagItemTitles[index];
+        final item = _tagItemTitles2[index];
+        _tagPanelKey2.currentState.appendATag(item);
 
         // 包裹手势控件，支持长按浮出菜单
         return GestureDetector(
@@ -599,10 +610,10 @@ class _MyHomePageState extends State<MyHomePage>
             removeButton: TagItemRemoveButton(
               backgroundColor: Colors.green[900],
               onRemoved: () {
+                _tagPanelKey2.currentState.removeATag(index);
                 setState(() {
-                  _tagItemTitles.removeAt(index);
+                  _tagItemTitles2.removeAt(index);
                 });
-                return true;
               },
             ),
             textScaleFactor:
@@ -679,8 +690,9 @@ class _MyHomePageState extends State<MyHomePage>
             ]
           : null,
       onSubmitted: (String str) {
+        _tagPanelKey2.currentState.appendATag(str);
         setState(() {
-          _tagItemTitles.add(str);
+          _tagItemTitles2.add(str);
         });
       },
     );
