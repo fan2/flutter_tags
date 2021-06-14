@@ -9,7 +9,7 @@ typedef OnPressedCallback = void Function(TagItemData i);
 typedef OnLongPressedCallback = void Function(TagItemData i);
 
 /// Used by [TagItem.removeButton.onRemoved].
-typedef OnRemovedCallback = bool Function();
+typedef OnRemovedCallback = void Function();
 
 /// combines icon text or image
 enum TagItemCombineMode {
@@ -31,7 +31,7 @@ class TagItem extends StatefulWidget {
       this.customData,
       this.textStyle = const TextStyle(fontSize: 14),
       this.alignment = MainAxisAlignment.center,
-      this.combineMode = TagItemCombineMode.onlyText,
+      this.combineMode = TagItemCombineMode.imageOrIconOrText,
       this.icon,
       this.image,
       this.removeButton,
@@ -150,54 +150,8 @@ class _TagItemState extends State<TagItem> {
     // Get TagPanelInherited of current context
     // 当前标签向上寻找最近的 InheritedWidget 基类
     _tagPanelIn = TagPanelInherited.of(context);
-
-    // set List length
-    if (_tagPanelIn.cxtList.length < _tagPanelIn.itemCount)
-      _tagPanelIn.cxtList.length = _tagPanelIn.itemCount;
-
-    if (_tagPanelIn.cxtList.length > (widget.index + 1) &&
-        _tagPanelIn.cxtList.elementAt(widget.index) != null &&
-        _tagPanelIn.cxtList.elementAt(widget.index).title != widget.title) {
-      // when an element is removed from the data source
-      _tagPanelIn.cxtList.removeAt(widget.index);
-
-      // when all item list changed in data source
-      if (_tagPanelIn.cxtList.elementAt(widget.index) != null &&
-          _tagPanelIn.cxtList.elementAt(widget.index).title != widget.title)
-        _tagPanelIn.cxtList
-            .removeRange(widget.index, _tagPanelIn.cxtList.length);
-    }
-
-    // add new Item in the List
-    if (_tagPanelIn.cxtList.length < (widget.index + 1)) {
-      //print("add");
-      _tagPanelIn.cxtList.insert(
-          widget.index,
-          TagItemContext(
-              title: widget.title,
-              index: widget.index,
-              active: widget.active,
-              customData: widget.customData));
-    } else if (_tagPanelIn.cxtList.elementAt(widget.index) == null) {
-      //print("replace");
-      _tagPanelIn.cxtList[widget.index] = TagItemContext(
-          title: widget.title,
-          index: widget.index,
-          active: widget.active,
-          customData: widget.customData);
-    }
-
-    // removes items that have been orphaned
-    if (_tagPanelIn.itemCount == widget.index + 1 &&
-        _tagPanelIn.cxtList.length > _tagPanelIn.itemCount)
-      _tagPanelIn.cxtList
-          .removeRange(widget.index + 1, _tagPanelIn.cxtList.length);
-
-    //print(_tagPanelIn.cxtList.length);
-
-    // update Listener
-    if (_tagItemCxt != null) _tagItemCxt.removeListener(_didValueChange);
-
+    // add/update listener when build/rebuild
+    _tagItemCxt?.removeListener(_didValueChange);
     _tagItemCxt = _tagPanelIn.cxtList.elementAt(widget.index);
     _tagItemCxt.addListener(_didValueChange);
   }
@@ -412,8 +366,7 @@ class _TagItemState extends State<TagItem> {
                       ),
                       onTap: () {
                         if (widget.removeButton.onRemoved != null) {
-                          if (widget.removeButton.onRemoved())
-                            _tagPanelIn.cxtList.removeAt(widget.index);
+                          widget.removeButton.onRemoved();
                         }
                       },
                     )))

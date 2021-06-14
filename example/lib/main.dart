@@ -271,6 +271,8 @@ class _MyHomePageState extends State<MyHomePage>
                                 //color: Colors.white,
                                 icon: Icon(Icons.add),
                                 onPressed: () {
+                                  _tagPanelKey.currentState
+                                      .appendATag(_addCount.toString());
                                   setState(() {
                                     _addCount++;
                                     _tagItemTitles.add(_addCount.toString());
@@ -340,6 +342,7 @@ class _MyHomePageState extends State<MyHomePage>
       itemCount: _tagItemTitles.length,
       itemBuilder: (index) {
         final item = _tagItemTitles[index];
+        _tagPanelKey.currentState.appendATag(item);
 
         // pressEnabled: true, removeButton?,
         // pass singleSelection default true-!active
@@ -356,10 +359,10 @@ class _MyHomePageState extends State<MyHomePage>
           removeButton: _removeButton
               ? TagItemRemoveButton(
                   onRemoved: () {
+                    _tagPanelKey.currentState.removeATag(index);
                     setState(() {
                       _tagItemTitles.removeAt(index);
                     });
-                    return true;
                   },
                 )
               : null,

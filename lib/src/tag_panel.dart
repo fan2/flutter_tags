@@ -95,6 +95,15 @@ class TagPanelState extends State<TagPanel> {
   // 向外暴露基类状态数据 TagItemData 列表，以便遍历标签状态
   List<TagItemData> get getAllItemData => _cxtList.toList();
 
+  void appendATag(String title) {
+    int index = _cxtList.length;
+    _cxtList.add(TagItemContext(title: title, index: index));
+  }
+
+  void removeATag(int index) {
+    _cxtList.removeAt(index);
+  }
+
   //get the current width of the screen
   void _getWidthContext() {
     WidgetsBinding.instance.addPostFrameCallback((_) {
